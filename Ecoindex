@@ -1,0 +1,140 @@
+#文件第一列是名称时可用
+test=function(x){#函数名为test可随意修改
+  
+  dir.create("C:/ecoindex/")  #创建文件夹
+  unlink("C:/ecoindex/",recursive = TRUE)  #文件夹中原始数据清空
+  path='C:/ecoindex'  #设置工作路径即文件存储位置
+  setwd(path)         #使用路径
+  tmp=read.csv(file.choose())#选择文件
+  bigk=data.frame(tmp)#将传入文件转化为数据帧以便操作，也可以改成表格或矩阵
+  rm(tmp)
+  gc()  #释放内存
+  bigk2=bigk[-1:-1]  #将数据帧的第一列名字去掉防止后续操作改变名字或序号
+  bigk2[bigk2>0]<-1#将数据帧中所有非零数数变为1，该命令可以改成任意数只要不报错就行
+  xln=bigk2
+  xln1=data.matrix(xln)
+  print("Distribution area DONE")
+  DIS=colSums(xln1) #计算每列总和
+  div=colSums(bigk2)#计算每列的数值总和
+  num1=as.numeric(length(div))
+  cot=rowSums(bigk2)#计算每行的数值总和
+  num2=as.numeric(length(cot))
+  bigbigk=bigk
+  bigbigk[,2]=bigk2
+  write.table("修改后的矩阵",file = 'resave.CSV',append = F,row.names = F,sep = ', ',col.names = F)
+  write.table(bigbigk,file = 'resave.CSV',append = T,row.names = F,sep = ', ',col.names = T)  #写入文件数据以下重复命令相同
+  print("-----------------------------------------------------")
+  
+  box1=c()  #空盒子用来存挑选出的标题
+  box2=c()  #空盒子用来存挑选出的标题
+  TTnum=0  #用于结束循环与统计
+  xln2=matrix(1:(num1*num2),nrow = num2,byrow = T) #创建一个空矩阵
+  for(i in 1:num2)xln2[i,]=xln1[i,]  #将原始数据去掉标题后存到新矩阵中
+  
+
+  
+  while(TTnum < 0.9*num1){#此处数值是用来筛选全部物种的百分数的默认90%可修改
+  for(i in 1:num2)if(sum(xln2[i,])==max(rowSums(xln2)))box1=c(box1,i)  #将横行包含数目最多的序号存到盒子中
+  num3=as.numeric(length(box1))   #计算盒子内序号数目
+
+  for(i in 1:num3){
+    tt=as.numeric(box1[i])  #从box1中开始挨个横行坐标
+    for(j in 1:num1){
+      if(xln2[tt,j]==1)box2=c(box2,j)   #将符合条件的纵列坐标存到box2中
+      else FALSE
+    }
+  }
+  box2=box2[!duplicated(box2)] #多组数据存在重复去重
+  box3=sort(box2)       #顺便排序
+  TTnum=length(box3)+TTnum     #用box2的乱序也行计算box3中纵坐标
+  Txln2=t(xln2)        #将xln2旋转为了下一步操作
+  for(i in 1:TTnum)Txln2[box3[i],]=0   #旋转后将已经计算过的物种归零
+  xln2=t(Txln2)   #恢复原数据
+  }
+  print("Hotspot DONE")
+  #print(box1)
+  print("-----------------------------------------------------")
+ 
+  print("-----------------------------------------------------")
+  div2=div#重新拷贝防止原始数据丢失同时便于操作
+   for(i in 1:length(div2)) div2[i] = 1/div[i]#将div2全部变成div的倒数
+   for(i in 1:length(bigk2)) bigk2[i]=bigk2[i]*div2[i]#将转化为0和1的数据帧变成所需概率的数据帧
+   div3=rowSums(bigk2)#每行概率求和
+   ans1=bigk[1:1]#原始标题提取
+   WR=ans1
+   WR[2:2]=div3
+   print("Weighted Richness index DONE")
+   #print(WR)
+   print("-----------------------------------------------------")
+   RI=ans1#原始标题
+   RI[2:2]=cot#原始标题与原来每行0,1的数据结合
+   #将Hotspot 选出数字对应的RI值选出
+   hsnum=length(box1)
+   xRI=data.matrix(RI)
+   hs=matrix(1:hsnum*2,nrow = hsnum,ncol = 2)
+   for(i in 1:hsnum){
+     bonum=as.numeric(box1[i])
+     hs[i,]=xRI[bonum,]
+   }
+   print("Richness Index")
+   #print(RI)
+   print("-----------------------------------------------------")
+   WE=cot#创造同等长度格式数据帧拷贝最方便
+   for(i in 1:length(WE))WE[i]=div3[i]/cot[i] #按照要求概率除以总数
+   for(i in 1:length(WE)){  if(is.nan(WE[i]))    WE[i]=0  }
+   WEI=ans1
+   WEI[2:2]=WE  #拼接标题和数据
+   print("Weighted Endemic Index DONE")
+   #print(WEI)
+   print("-----------------------------------------------------")
+   NO=order(-WEI[,2]) #编号排序
+   WEA=sort(-WEI[,2]) #数据排序
+   WEA=abs(WEA)
+   NO=data.frame(NO)  #数据改为有格式数据帧
+   WEA=data.frame(WEA) #数据改为有格式数据帧
+   ln1=NO #创建同样格式
+   ln1[2:2]=WEA #拼接数据和标题
+   ln1=data.matrix(ln1)
+   cu1=as.numeric(length(ln1))
+   ln2=matrix(1:cu1,nrow = 0.5*cu1,ncol = 2)
+   for(i in 1:(cu1*0.5))ln2[i,]=ln1[i,]
+   cu2=0
+   for(i in 1:(cu1*0.5)){   
+     if(ln2[i,2]!=0)cu2=cu2+1  
+     }
+   per5=cu2*0.05    #前5%的数据一共有多少个
+   per10=cu2*0.10   #前10%的数据一共有多少个
+   #ln3=data.matrix(ln1)  #创建一个矩阵可以在任意位置查找
+   EA5=ln2[1:per5,]      #前5%的数据提取
+   EA10=ln2[1:per10,]     #前10%的数据提取
+   print("Endemic Area") 
+   print("the First 5% DONE")
+   #print(EA5)
+   print("the First 10% DONE")
+   #print(EA10)
+   print("-----------------------------------------------------")
+  
+    write.table("Distribution area",file = 'ecoindex.CSV',append = F,row.names = F,sep = ', ',col.names = F)
+    write.table(t(DIS),file = 'ecoindex.CSV',append = T,row.names = F,sep = ', ',col.names = T)  #写入文件数据以下重复命令相同
+    write.table("Hotspot",file = 'ecoindex.CSV',append = T,row.names = F,sep = ', ',col.names = F)
+    write.table(hs,file = 'ecoindex.CSV',append = T,row.names = F,sep = ', ',col.names = F)
+    write.table("Weighted Richness index 单独列出",file = 'ecoindex.CSV',append = T,row.names = F,sep = ', ',col.names = F)
+    write.table(WR,file = 'Weighted Richness index.CSV',append = F,row.names = F,sep = ', ',col.names = F)
+    write.table("Richness Index 单独列出",file = 'ecoindex',append = T,row.names = F,sep = ', ',col.names = F)
+    write.table(RI,file = 'Richness Index.CSV',append = F,row.names = F,sep = ', ',col.names = F)
+    write.table("Weighted Endemic Index 单独列出",file = 'ecoindex.CSV',append = T,row.names = F,sep = ', ',col.names = F)
+    write.table(WEI,file = 'Weighted Endemic Index.CSV',append = F ,row.names = F,sep = ', ',col.names = F)
+    write.table("Endemism Area 单独列出",file = 'ecoindex.CSV',append = T,row.names = F,sep = ', ',col.names = F)
+    write.table("the First 5%",file = 'Endemic Area.CSV',append = F,row.names = F,sep = ', ',col.names = F)
+    write.table(EA5,file = 'Endemic Area.CSV',append = T,row.names = F,sep = ', ',col.names = F)
+    write.table("\n\n",file = 'Endemic Area.CSV',append = T,row.names = F,sep = ', ',col.names = F)
+    write.table("the First 10%",file = 'Endemic Area.CSV',append = T,row.names = F,sep = ', ',col.names = F)
+    write.table(EA10,file = 'Endemic Area.CSV',append = T,row.names = F,sep = ', ',col.names = F)
+   
+   print("已保存到C盘文件夹/ecoindex/中每次运行后自动清除上一次数据")
+   return(0)
+}
+  # 
+ 
+#end
+
