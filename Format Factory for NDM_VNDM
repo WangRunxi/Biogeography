@@ -1,0 +1,204 @@
+#To determine area of endemism, a optimality criterion method NDM/VNDM was widely used (Szumik et al., 2001; 
+#Szumik & Goloboff, 2004; Prado et al., 2014; Weirauch et al., 2016). But before this analysis, the format 
+#conversion annoyed me for a while. Here, my friends, Wenwu Wang (College of Life Sciences, good at R) and 
+#Gaofeng Li (College of Computer and Control Engineering, good at matlab), and I solved this problem using R and matlab.
+#We'd like to share about this, but the version we provided here only with Chinese annotation.
+#If you have any question, welcome to discuss with me. And if you dicovered any error, please contact me!
+#Thanks.
+#Email:wanganrunxi@gmail.com
+###########################   Format Factory for R   #################################
+#该代码用于进行在物种特有性分析中，使用NDM/VNDM法时，解决格式转换问题，将物种分布统计结果的csv文件
+#转换为NDM可识别的xyd文件。
+#注意1：结束后请
+#a.在转换结束后其格式为csv，请使用txt（Notepad）打开
+#b.将文件中的双引号（""）删去
+#c.按照以下格式对开头进行修饰：
+#nocommas
+#spp number（保留原文件中此项）
+#xydata
+#d.最后另存为并将后缀改为“.xyd”
+#注意2：原始文件需要CSV格式
+#作者：王润玺 王文武 南开大学生命科学学院
+bigk=function(x){
+  dir.create("C:/a文本格式转存/")  #创建文件夹
+  unlink("C:/a文本格式转存/",recursive = TRUE)  #文件夹中原始数据清空
+  path='C:/a文本格式转存'  #设置工作路径即文件存储位置
+  setwd(path)         #使用路径
+  tmp=read.csv(file.choose())
+  ans1=tmp[1:1]
+  ans2=t(ans1)
+  ti=c(ans2)
+  xln=sort(ti)#对列名文字进行排序
+  ln1=data.matrix(tmp)
+  ln2=ln1
+  ln2=ln1[order(ln1[,1]),]   #按名称排序 
+  cot1=as.numeric(length(ln2))  #统计数据总数
+  cot2=cot1/3   #统计每列数据
+  cot3=cot2+1   #增加一列空数据循环停止的地方
+  ln3=matrix(1:(cot3*3),nrow=cot3,byrow=T) #按行排列矩阵
+  ln3[1:cot2,]=ln2[1:cot2,]
+  ln3[cot3,1:3]=0
+  ln4=data.frame(ln3)
+  ln5=ln4[-1:-1]
+  ln6=data.matrix(ln5)
+  print("spp")
+  i=j=cot=1
+  tnum=0
+  while(j<= cot3){
+    if(ln3[j,1]==ln3[i,1])j=j+1
+    else {
+      i=j 
+      tnum = tnum+1
+    } 
+  }
+  tmix=paste("spp",tnum,sep = ":")
+  write.table(t(tmix),file = '格式转换.CSV',append = F ,row.names = F ,sep = ',',col.names = F)  #写入文件数据
+  write.table(c(""),file = '格式转换.CSV',append = T ,row.names = F ,eol = "\n",sep = ",",col.names = F)
+  i=j=cot=1
+  num=0
+  while(j<= cot3){
+    if(ln3[j,1]==ln3[i,1]){
+      j=j+1
+      ro=j-i #计算本次走了多少行
+    }else {
+      ro=j-i-1 #计算本次走了多少行
+      sp=ln5[i:(i+ro),]
+      Q=paste('[',xln[i],']',sep = "")
+      mix1=paste("sp",num,Q,sep = " ") #标题项目
+      num=num+1 #编辑过程中用来检测循环数
+      i=j
+      mix=data.matrix(mix1)
+      print(mix)
+      write.table(t(mix),file = '格式转换.CSV',append = T ,row.names = F ,eol = "\n",sep = ",",col.names = F)  #写入文件数据
+      print(sp)
+      write.table(sp,file = '格式转换.CSV',append = T ,row.names = F ,sep = ",",col.names = F)  #写入文件数据
+      write.table(c(""),file = '格式转换.CSV',append = T ,row.names = F ,eol = "\n",sep = ",",col.names = F)
+    }
+  }
+  print("运行结束，请到C:/a文本格式转存/格式转换.csv寻找输出文件")
+}
+##end
+#该代码用于进行在物种特有性分析中，使用NDM/VNDM法时，解决格式转换问题，将物种分布统计结果的csv文件
+#转换为NDM可识别的xyd文件。
+#注意1：结束后请
+#a.在转换结束后其格式为csv，请使用txt（Notepad）打开
+#b.将文件中的双引号（""）删去
+#c.按照以下格式对开头进行修饰：
+#nocommas
+#spp number（保留原文件中此项）
+#xydata
+#d.最后另存为并将后缀改为“.xyd”
+#注意2：原始文件需要CSV格式
+#作者：王润玺 王文武 南开大学生命科学学院
+bigk=function(x){
+  dir.create("C:/a文本格式转存/")  #创建文件夹
+  unlink("C:/a文本格式转存/",recursive = TRUE)  #文件夹中原始数据清空
+  path='C:/a文本格式转存'  #设置工作路径即文件存储位置
+  setwd(path)         #使用路径
+  tmp=read.csv(file.choose())
+  ans1=tmp[1:1]
+  ans2=t(ans1)
+  ti=c(ans2)
+  xln=sort(ti)#对列名文字进行排序
+  ln1=data.matrix(tmp)
+  ln2=ln1
+  ln2=ln1[order(ln1[,1]),]   #按名称排序 
+  cot1=as.numeric(length(ln2))  #统计数据总数
+  cot2=cot1/3   #统计每列数据
+  cot3=cot2+1   #增加一列空数据循环停止的地方
+  ln3=matrix(1:(cot3*3),nrow=cot3,byrow=T) #按行排列矩阵
+  ln3[1:cot2,]=ln2[1:cot2,]
+  ln3[cot3,1:3]=0
+  ln4=data.frame(ln3)
+  ln5=ln4[-1:-1]
+  ln6=data.matrix(ln5)
+  print("spp")
+  i=j=cot=1
+  tnum=0
+  while(j<= cot3){
+    if(ln3[j,1]==ln3[i,1])j=j+1
+    else {
+      i=j 
+      tnum = tnum+1
+    } 
+  }
+  tmix=paste("spp",tnum,sep = ":")
+  write.table(t(tmix),file = '格式转换.CSV',append = F ,row.names = F ,sep = ',',col.names = F)  #写入文件数据
+  write.table(c(""),file = '格式转换.CSV',append = T ,row.names = F ,eol = "\n",sep = ",",col.names = F)
+  i=j=cot=1
+  num=0
+  while(j<= cot3){
+    if(ln3[j,1]==ln3[i,1]){
+      j=j+1
+      ro=j-i #计算本次走了多少行
+    }else {
+      ro=j-i-1 #计算本次走了多少行
+      sp=ln5[i:(i+ro),]
+      Q=paste('[',xln[i],']',sep = "")
+      mix1=paste("sp",num,Q,sep = " ") #标题项目
+      num=num+1 #编辑过程中用来检测循环数
+      i=j
+      mix=data.matrix(mix1)
+      print(mix)
+      write.table(t(mix),file = '格式转换.CSV',append = T ,row.names = F ,eol = "\n",sep = ",",col.names = F)  #写入文件数据
+      print(sp)
+      write.table(sp,file = '格式转换.CSV',append = T ,row.names = F ,sep = ",",col.names = F)  #写入文件数据
+      write.table(c(""),file = '格式转换.CSV',append = T ,row.names = F ,eol = "\n",sep = ",",col.names = F)
+    }
+  }
+  print("运行结束，请到C:/a文本格式转存/格式转换.csv寻找输出文件")
+}
+##end
+
+###########################   Format Factory for matlab   #################################
+%% 加载excel数据，其中data中存储的是所有的数字，txt存储的是所有文本。raw存储着所有格式的数据。我们要用raw的数据
+[data,txt,raw]=xlsread('盲蝽特有物种',1);%其中'盲蝽特有种数据'是excel文档名字，1表示读取的是其中第一个sheet的数据
+
+%% 处理数据，获取数据大小
+[m,n] = size(raw);
+
+%% 循环处理所有数据，依次写入txt文件中
+dataFile = fopen('D:\F\学习科研\01-机器人所类\工具书\数据格式转换\data.txt','w+');
+fprintf(dataFile,'');%%每次先清空文档.w+表示以覆盖写入的形式打开文档
+dataFile = fopen('D:\F\学习科研\01-机器人所类\工具书\数据格式转换\data.txt','a+');%创建并打开一个txt文档，a+表示以追加的形式写入文档
+fprintf(dataFile,'nocommas\r\n');
+fprintf(dataFile,'spp \r\n');
+fprintf(dataFile,'xydata\r\n');
+fprintf(dataFile,'\r\n');
+
+spNum = 0;%记录物种数量
+spName ='';%记录物种名称，初始时物种名字是空
+spNameTemp = '';%临时变量，记录刚读入的这一行的物种名字，如果该名称与spName不同，说明这一行的物种跟上一行不同，那么要让spNum+1；
+for i=1:1:m %一共m行数据，逐行处理
+    if i == 1 %如果是第一行数据，则不用比较物种名称是否相同，直接把物种名称赋值给spName
+        spName = raw(1,1);
+        message = ['sp ', num2str(spNum), ' [', char(spName), ']','\r\n'];%要写入txt文档的文本内容
+        fprintf(dataFile,message);
+        
+        latitude = raw(1,2);
+        longitude = raw(1,3);
+        message = [num2str(latitude{1}),'\t',num2str(longitude{1}),'\r\n'];%将经纬度数据写入
+        fprintf(dataFile,message);
+    else
+        spNameTemp = raw(i,1);
+        if isequal(spNameTemp,spName)
+            latitude = raw(i,2);
+            longitude = raw(i,3);
+            message = [num2str(latitude{1}),'\t',num2str(longitude{1}),'\r\n'];%将经纬度数据写入
+            fprintf(dataFile,message);
+        else
+            spName = spNameTemp;
+            spNum = spNum + 1;
+            fprintf(dataFile,' \r\n');
+            message = ['sp ', num2str(spNum), ' [', char(spName), ']','\r\n'];%要写入txt文档的文本内容
+            fprintf(dataFile,message);
+        
+            latitude = raw(i,2);
+            longitude = raw(i,3);
+            message = [num2str(latitude{1}),'\t',num2str(longitude{1}),'\r\n'];%将经纬度数据写入
+            fprintf(dataFile,message);
+        end
+    end
+end
+fclose(dataFile);
+disp(spNum+1);%统计最终的物种个数。把这个个数填入最终的文本文件中
