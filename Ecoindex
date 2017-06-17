@@ -1,3 +1,5 @@
+#Ecoindex contains algorithm of species richness index, weighted richness, weighted endemism (López-Pujol et al., 2011) 
+#and hotspots (Liu et al., 2016) for R.
 #文件第一列是名称时可用
 test=function(x){#函数名为test可随意修改
   
